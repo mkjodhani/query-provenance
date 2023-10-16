@@ -18,7 +18,7 @@ public class Row {
     }
     private HashMap<String,String> values;
     HashMap<String,TYPE> columnTypes;
-    private String annotation;
+    private HashMap<String,Integer> annotations;
 
     private String tableName;
 
@@ -26,6 +26,7 @@ public class Row {
         this.columnTypes = columnTypes;
         this.values = new HashMap<>();
         this.tableName = tableName;
+        this.annotations = new HashMap<>();
     }
 
     public HashMap<String, String> getValues() {
@@ -44,12 +45,33 @@ public class Row {
         this.columnTypes = columnTypes;
     }
 
-    public String getAnnotation() {
-        return annotation;
+    public HashMap<String, Integer> getAnnotationsMap() {
+        return annotations;
     }
 
-    public void setAnnotation(String annotation) {
-        this.annotation = annotation;
+    public String getAnnotation() {
+        String annotation = "";
+        for(String ann: this.annotations.keySet()){
+            annotation +=  String.format("%s%s",this.annotations.getOrDefault(ann,0) <=1 ? "" : String.valueOf(this.annotations.getOrDefault(ann,0)),ann);
+        }
+        return annotation;
+    }
+    public String getFinalAnnotation() {
+        String annotation = "";
+        for(String ann: this.annotations.keySet()){
+            annotation +=  String.format("%s%s",this.annotations.getOrDefault(ann,0) <=1 ? "" : String.valueOf(this.annotations.getOrDefault(ann,0)),ann) + " + ";
+        }
+        return annotation.replaceAll(" \\+ $","");
+    }
+    public void setAnnotation(String ann) {
+        int updatedValue = this.annotations.getOrDefault(ann,0) + 1;
+        this.annotations.put(ann,updatedValue);
+    }
+    public void setAnnotation(HashMap<String,Integer> anns) {
+        for(String ann: anns.keySet()){
+            int updatedValue = this.annotations.getOrDefault(ann,0) + 1;
+            this.annotations.put(ann,updatedValue);
+        }
     }
     public void put(String key,String value){
         values.put(key,value);
@@ -57,7 +79,7 @@ public class Row {
 
     @Override
     public String toString() {
-        return values + String.format(" => (%s)",getAnnotation());
+        return values + String.format(" => (%s)",getFinalAnnotation());
     }
 
     private boolean compare(String a, String b, String comparator) throws Exception {
@@ -141,11 +163,11 @@ public class Row {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Row row = (Row) o;
-        return Objects.equals(values, row.values) && Objects.equals(columnTypes, row.columnTypes) && Objects.equals(annotation, row.annotation);
+        return Objects.equals(values, row.values);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(values, columnTypes, annotation);
+        return Objects.hash(values, columnTypes, getAnnotation());
     }
 }

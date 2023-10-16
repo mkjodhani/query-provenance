@@ -159,4 +159,20 @@ public class Table {
             }
         }
     }
+
+    public void aggregate() {
+        HashMap<String,Row> isSelectedRow = new HashMap<>();
+        for(Row row: this.jointRows){
+            if(isSelectedRow.getOrDefault(row.getValues().toString(),null) != null){
+                Row selecctedRow = isSelectedRow.get(row.getValues().toString());
+                selecctedRow.setAnnotation(row.getAnnotationsMap());
+            }else{
+                isSelectedRow.put(row.getValues().toString(),row);
+            }
+        }
+        this.jointRows = new ArrayList<>();
+        for (Row row : isSelectedRow.values()) {
+            this.jointRows.add(row);
+        }
+    }
 }
