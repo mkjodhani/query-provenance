@@ -46,6 +46,7 @@ public class Query {
         this.projection = new Table((String) relations.toArray()[0],(String) relations.toArray()[1],"product","product_id");
         this.projection.filterByClauses(this.clauses);
         this.projection.filterProjection(this.selectedColumns);
+        this.projection.aggregate();
     }
 
     private void execute(){

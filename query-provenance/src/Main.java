@@ -10,7 +10,7 @@ import java.sql.SQLException;
  */
 public class Main {
     public static void main(String args[]) throws SQLException {
-        String query = "SELECT products.product_type,routes.region_from FROM products, routes WHERE routes.product = products.product_id AND products.product_type = 'ELECTRONICS'"; //scanner.nextLine();
+        String query = "SELECT products.product_type FROM products, routes WHERE routes.product = products.product_id AND products.product_type = 'ELECTRONICS'"; //scanner.nextLine();
         if(query.contains("UNION")){
             String[] queries = query.split("UNION");
             Query query1 = new Query(queries[0]);
