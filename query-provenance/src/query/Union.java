@@ -1,5 +1,7 @@
 package query;
 
+import javafx.scene.control.Tab;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -19,9 +21,9 @@ public class Union {
         this.projectionA = tableA;
         this.projectionB = tableB;
         this.rows = new ArrayList<>();
-        this.rows.addAll(this.projectionA.jointRows);
-        this.rows.addAll(this.projectionB.jointRows);
-        this.columnTypes = this.projectionA.jointColumnTypes;
+        this.rows.addAll(this.projectionA.rows);
+        this.rows.addAll(this.projectionB.rows);
+        this.columnTypes = this.projectionA.columnTypes;
     }
     public void show() {
         for (Row row : this.rows) {
