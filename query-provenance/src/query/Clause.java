@@ -1,6 +1,7 @@
 package query;
 
 import java.util.Objects;
+import java.util.regex.Pattern;
 
 /**
  * @author mkjodhani
@@ -10,6 +11,10 @@ import java.util.Objects;
  */
 public class Clause {
     private String operator, left, right;
+    public static Pattern comparatorPattern;
+    static{
+        comparatorPattern = Pattern.compile("( [<>=(in)(IN)]+ )");
+    }
 
     public Clause(String operator, String left, String right) {
         this.operator = operator.replaceAll(" ", "");

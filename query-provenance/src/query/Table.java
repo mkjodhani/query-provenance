@@ -11,45 +11,32 @@ import java.util.*;
  */
 
 public class Table {
-    private String tableNameA, tableNameB;
-    private boolean isJoinTable;
-    HashMap<String, Row.TYPE> columnTypesA;
-    HashMap<String, Row.TYPE> columnTypesB;
-    HashMap<String, Row.TYPE> jointColumnTypes;
-    List<Row> rowsA;
-    List<Row> rowsB;
-    String tableBCol, tableACol;
-    List<Row> jointRows;
-    public Table(String tableName) {
-        this.tableNameA = tableName;
-        this.rowsA = new ArrayList<>();
-        this.rowsB = new ArrayList<>();
-        this.columnTypesA = new HashMap<>();
-        this.columnTypesB = new HashMap<>();
-        this.isJoinTable = false;
+    String tableNameA;
+    HashMap<String, Row.TYPE> columnTypes;
+    HashMap<String, Integer> columnIndexes;
+    List<Row> rows;
+    private Table(){
+        this.tableNameA = "";
+        this.columnTypes = new HashMap<>();
+        this.columnIndexes = new HashMap<>();
+        this.rows = new ArrayList<>();
     }
-
-    public Table(String tableNameA, String tableNameB, String tableACol, String tableBCol) {
-        this.tableNameA = tableNameA;
-        this.tableNameB = tableNameB;
-        this.rowsA = new ArrayList<>();
-        this.rowsB = new ArrayList<>();
-        this.columnTypesA = new HashMap<>();
-        this.columnTypesB = new HashMap<>();
-        this.isJoinTable = true;
-        this.tableACol = tableACol;
-        this.tableBCol = tableBCol;
-        this.jointColumnTypes = new HashMap<>();
-        try {
-            generateRows();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+    public Table(String tableName) {
+        try{
+            this.tableNameA = tableName;
+            this.columnTypes = getColumnTypesByRelation();
+            this.columnIndexes = getColumnIndexesByRelation(this.columnTypes);
+            this.rows = getRowsByRelation();
+        }
+        catch (Exception e){
+            e.printStackTrace();
         }
     }
-    private HashMap<String, Row.TYPE> getColumnTypesByRelation(String table) throws SQLException {
+
+    private HashMap<String, Row.TYPE> getColumnTypesByRelation() throws SQLException {
         Connection connection  = Query.getConnection();
         Statement statement = connection.createStatement();
-        ResultSet resultSet = statement.executeQuery("SELECT  * FROM " + table);
+        ResultSet resultSet = statement.executeQuery("SELECT  * FROM " + this.tableNameA);
         ResultSetMetaData metaData = resultSet.getMetaData();
         int columnCount = metaData.getColumnCount();
         HashMap<String, Row.TYPE> columnTypes = new HashMap<>();
@@ -58,121 +45,138 @@ public class Table {
         }
         return columnTypes;
     }
-    private List<Row> getRowsByRelation(String table) throws SQLException {
+    private HashMap<String, Integer> getColumnIndexesByRelation(HashMap<String, Row.TYPE> columnTypes) throws SQLException {
+        HashMap<String, Integer> indexes = new HashMap<>();
+        int columnIndex = 0;
+        for(String col:columnTypes.keySet()){
+            indexes.put(col,columnIndex);
+            columnIndex++;
+        }
+        return indexes;
+    }
+    private List<Row> getRowsByRelation() throws SQLException {
         Connection connection  = Query.getConnection();
         Statement statement = connection.createStatement();
-        ResultSet resultSet = statement.executeQuery("SELECT  * FROM " + table);
+        ResultSet resultSet = statement.executeQuery("SELECT  * FROM " + this.tableNameA);
         ResultSetMetaData metaData = resultSet.getMetaData();
         int columnCount = metaData.getColumnCount();
-        HashMap<String, Row.TYPE> columnTypes = new HashMap<>();
         List<Row> rows = new ArrayList<>();
-        for (int i = 1; i <= columnCount; i++) {
-            columnTypes.put(metaData.getTableName(i) +"."+metaData.getColumnName(i), Objects.equals(metaData.getColumnTypeName(i), "int4") ? Row.TYPE.DIGIT : Row.TYPE.STRING);
-        }
         while (resultSet.next()){
-            Row row = new Row(columnTypes,table);
+            Row row = new Row(this.columnTypes,this.columnIndexes,this.tableNameA);
             for (int i = 1; i <= columnCount; i++) {
-                row.put(metaData.getColumnName(i),resultSet.getString(metaData.getColumnName(i)));
+                row.setValueByColumn(metaData.getColumnName(i),resultSet.getString(metaData.getColumnName(i)));
             }
-            row.setAnnotation(String.format("%s",row.getValues().get("ann")));
+            // hard-coded value:: ERROR need to change
+            row.setAnnotation(String.format("%s",row.getValueByColumn("ann")));
             rows.add(row);
         }
         return rows;
     }
-    private void generateRows() throws SQLException {
-        if(this.isJoinTable){
-            this.rowsA = getRowsByRelation(this.tableNameA);
-            this.rowsB = getRowsByRelation(this.tableNameB);
-            this.columnTypesA = getColumnTypesByRelation(tableNameA);
-            this.columnTypesA = getColumnTypesByRelation(tableNameB);
-            this.jointRows = new ArrayList<>();
-            for(String col:this.rowsA.get(0).columnTypes.keySet()){
-                String tableCol = col.contains(tableNameA+".") ? col : String.format("%s.%s",this.tableNameA,col);
-                this.jointColumnTypes.put(tableCol,this.rowsA.get(0).columnTypes.get(col));
-            }
-            for(String col:this.rowsB.get(0).columnTypes.keySet()){
-                String tableCol = col.contains(tableNameB+".") ? col : String.format("%s.%s",this.tableNameB,col);
-                this.jointColumnTypes.put(tableCol,this.rowsB.get(0).columnTypes.get(col));
-            }
-            for (Row rowA : this.rowsA) {
-                for (Row rowB:this.rowsB) {
-                    if(rowA.getValues().get(this.tableACol).equals(rowB.getValues().get(this.tableBCol))){
-                        Row row = new Row(jointColumnTypes, String.format("%s.%s",this.tableNameA,this.tableNameB));  // tableName=A.B
-                        row.copyFrom(rowA,this.tableNameA);
-                        row.copyFrom(rowB,this.tableNameB);
-                        String updatedAnnotation = String.format("%s.%s",rowA.getAnnotation(),rowB.getAnnotation());
-                        row.setAnnotation(updatedAnnotation);
-                        this.jointRows.add(row);
-                    }
-                }
-            }
+    private static HashMap<String,Integer> generateJointTableColumnIndexes(HashMap<String,Row.TYPE> columnTypesA,HashMap<String,Row.TYPE> columnTypesB,String tableA, String tableB){
+        if(tableA.equals(tableB)){
+            tableB=  tableB + "1";
         }
-        else{
-            this.rowsA = getRowsByRelation(this.tableNameA);
-            this.columnTypesA = getColumnTypesByRelation(tableNameA);
+        int rowIndex= 0 ;
+        HashMap<String, Integer> combinedIndexes = new HashMap<>();
+        for(String col:columnTypesA.keySet()){
+            String colAlias = String.format("%s.%s",tableA,col);
+            if(columnTypesB.getOrDefault(col,null) == null){
+                combinedIndexes.put(col,rowIndex);
+            }
+            combinedIndexes.put(colAlias,rowIndex);
+            rowIndex++;
         }
+        for(String col:columnTypesB.keySet()){
+            String colAlias = String.format("%s.%s",tableB,col);
+            if(columnTypesA.getOrDefault(col,null) == null){
+                combinedIndexes.put(col,rowIndex);
+            }
+            combinedIndexes.put(colAlias,rowIndex);
+            rowIndex++;
+        }
+        return combinedIndexes;
     }
-
+    private static HashMap<String,Row.TYPE> generateJoinTypes(HashMap<String,Row.TYPE> columnTypesA,HashMap<String,Row.TYPE> columnTypesB,String tableA, String tableB){
+        if(tableA.equals(tableB)){
+            tableB=  tableB + "1";
+        }
+        HashMap<String,Row.TYPE> resultTypes = new HashMap<>();
+        for(String col:columnTypesA.keySet()){
+            String colAlias = String.format("%s.%s",tableA,col);
+            if(columnTypesB.getOrDefault(col,null) == null){
+                resultTypes.put(col,columnTypesA.get(col));
+            }
+            resultTypes.put(colAlias,columnTypesA.get(col));
+        }
+        for(String col:columnTypesB.keySet()){
+            String colAlias = String.format("%s.%s",tableB,col);
+            if(columnTypesB.getOrDefault(col,null) == null){
+                resultTypes.put(col,columnTypesB.get(col));
+            }
+            resultTypes.put(colAlias,columnTypesB.get(col));
+        }
+        return resultTypes;
+    }
     public void show(){
-        if(this.isJoinTable) {
-            for (Row rowA : this.jointRows) {
-                System.out.println(rowA);
-            }
-        }else{
-            for (Row rowA : this.rowsA) {
-                System.out.println(rowA);
-            }
+        for (Row row : this.rows) {
+            System.out.println(row);
         }
     }
 
-    public void filterByClauses(Set<Clause> clauses) {
-        if(isJoinTable){
-            for(Clause clause: clauses){
-                Iterator<Row> iterator = this.jointRows.iterator();
-                while (iterator.hasNext()){
-                    Row mp = iterator.next();
-                    if(!mp.apply(clause, true)){
-                        iterator.remove();
-                    }
-                }
-            }
-        }else{
-            for(Clause clause: clauses){
-                Iterator<Row> iterator = this.rowsA.iterator();
-                while (iterator.hasNext()){
-                    Row mp = iterator.next();
-                    if(!mp.apply(clause,false)){
-                        iterator.remove();
-                    }
+    public void filterByClauses(List<Clause> clauses) {
+        for(Clause clause: clauses){
+            Iterator<Row> iterator = this.rows.iterator();
+            while (iterator.hasNext()){
+                Row mp = iterator.next();
+                if(!mp.apply(clause)){
+                    iterator.remove();
                 }
             }
         }
     }
     public void filterProjection(List<String> columns){
-        if(this.isJoinTable){
-            for(Row row: this.jointRows){
-                row.filterByColumnNames(columns);
-            }
-        }else{
-            for(Row row: this.rowsA){
-                row.filterByColumnNames(columns);
-            }
+        for(Row row: this.rows){
+            row.filterByColumnNames(columns);
         }
     }
 
     public void aggregate() {
         HashMap<String,Row> isSelectedRow = new HashMap<>();
-        for(Row row: this.jointRows){
+        List<Row> rowList= new ArrayList<>();
+        for(Row row: this.rows){
             if(isSelectedRow.getOrDefault(row.getValues().toString(),null) != null){
                 Row selecctedRow = isSelectedRow.get(row.getValues().toString());
                 selecctedRow.setAnnotation(row.getAnnotationsMap());
             }else{
                 isSelectedRow.put(row.getValues().toString(),row);
+                rowList.add(row);
             }
         }
-        this.jointRows = new ArrayList<>();
-        for (Row row : isSelectedRow.values()) {
-            this.jointRows.add(row);
+        this.rows = rowList;
+    }
+
+    public String getTableNameA() {
+        return tableNameA;
+    }
+
+    public Table join(Table table, List<Clause> clauses){
+        Table jointTable = new Table();
+        jointTable.columnTypes = generateJoinTypes(this.getColumnTypes(),table.getColumnTypes(),this.tableNameA,table.getTableNameA());
+        jointTable.columnIndexes = generateJointTableColumnIndexes(this.getColumnTypes(),table.getColumnTypes(),this.tableNameA,table.getTableNameA());
+        jointTable.tableNameA = this.getTableNameA() + "." + table.getTableNameA();
+        for (Row rowA: this.rows){
+            for (Row rowB :table.rows){
+                Row row = new Row(jointTable.columnTypes,jointTable.columnIndexes, jointTable.tableNameA);
+                row.copyFrom(rowA);
+                row.copyFrom(rowB);
+                row.setAnnotation(rowA.getAnnotation() + "·"+rowB.getAnnotation());
+                jointTable.rows.add(row);
+            }
         }
+        jointTable.filterByClauses(clauses);
+        return jointTable;
+    }
+    public HashMap<String, Row.TYPE> getColumnTypes() {
+        return columnTypes;
     }
 }
