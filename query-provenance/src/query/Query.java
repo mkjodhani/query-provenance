@@ -1,5 +1,6 @@
 package query;
 
+import database.DatabaseConnection;
 import query.clause.ComplexClause;
 import query.clause.SimpleClause;
 
@@ -16,19 +17,6 @@ import java.util.regex.Pattern;
  */
 
 public class Query {
-    private static Connection connection = null;
-    static {
-        try {
-            Class.forName("org.postgresql.Driver");
-            connection = DriverManager
-                    .getConnection("jdbc:postgresql://localhost:5432/postgres",
-                            "postgres", "6563");
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.err.println(e.getClass().getName()+": "+e.getMessage());
-            System.exit(0);
-        }
-    }
     private String queryString;
     private List<String> relations;
     private Map<String, Set<String>> schema;
@@ -36,8 +24,8 @@ public class Query {
     private Table projection;
     private List<String> selectedColumns;
     private long executionTime ;
+
     public Query(String queryString) {
-//        System.out.println("------------------------------------------------------------------------------------------------------------------------------");
         this.queryString = queryString;
         this.schema = new HashMap<>();
         this.clauses = new ArrayList<>();
@@ -80,7 +68,7 @@ public class Query {
                     this.relations.add(table.trim());
                     Set<String> columns = new HashSet<>();
                     Statement statement = null;
-                    statement = connection.createStatement();
+                    statement = DatabaseConnection.getConnection().createStatement();
                     ResultSet resultSet =  statement.executeQuery("select * from "+table);
 
                     // Get the metadata of the result set, which contains information about the columns
@@ -160,69 +148,10 @@ public class Query {
 //            }
         }
     }
-    public String getRootColumnName(String col){
-        String relations = "";
-        for(String table: this.relations){
-            relations += "[" +table +"]";
-        }
-        Pattern pattern = Pattern.compile("^("+relations+"\\.)");
-        Matcher matcher = pattern.matcher(col);
-        if(matcher.find()){
-            return col.replace(matcher.group(1),"");
-        }
-        return col;
-    }
-    public static Connection getConnection() {
-        return connection;
-    }
-
     public Table getProjection() {
         return projection;
     }
-    public  int getSize(){
-        return this.projection.rows.size();
-    }
-
     public long getExecutionTime() {
         return executionTime;
     }
-    public void showAnalysis(){
-        System.out.println("Resulted Row ::" + String.valueOf(this.getSize()));
-        System.out.println("Execution Time ::" + this.getExecutionTime() + " milliseconds");
-//        HashMap<String,String> values = new HashMap<>();
-//        values.put("Query :",this.queryString);
-//        values.put("Resulted Row",String.valueOf(this.getSize()));
-//        values.put("Execution Time",String.valueOf(this.getExecutionTime()));
-//        printHashMapInTable(values);
-    }
-    public static void printHashMapInTable(HashMap<?, ?> hashMap) {
-        System.out.println("+-----------------------+");
-        System.out.println("| Variation   |  Time   |");
-        System.out.println("+-----------------------+");
-
-        for (Map.Entry<?, ?> entry : hashMap.entrySet()) {
-            String key = entry.getKey().toString();
-            String value = entry.getValue().toString();
-
-            int keyPadding = 12 - key.length();
-            int valuePadding = 6 - value.length();
-
-            StringBuilder row = new StringBuilder("| ");
-            row.append(key);
-            for (int i = 0; i < keyPadding; i++) {
-                row.append(" ");
-            }
-            row.append(" | ");
-            row.append(value);
-            for (int i = 0; i < valuePadding; i++) {
-                row.append(" ");
-            }
-            row.append(" |");
-
-            System.out.println(row.toString());
-        }
-
-        System.out.println("+-----------------------+");
-    }
-
 }

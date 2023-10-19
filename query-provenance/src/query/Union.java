@@ -18,9 +18,9 @@ public class Union {
 
     public Union(Table tableA, Table tableB) throws SQLException {
         this.rows = new ArrayList<>();
-        this.rows.addAll(tableA.rows);
-        this.rows.addAll(tableB.rows);
-        this.columnTypes = tableA.columnTypes;
+        this.rows.addAll(tableA.getRows());
+        this.rows.addAll(tableB.getRows());
+        this.columnTypes = tableA.getColumnTypes();
         this.table = new Table(this.columnTypes,this.rows, String.format(tableA+":"+ tableB));
         table.aggregate();
     }

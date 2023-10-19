@@ -144,7 +144,6 @@ public class Row {
             int rowIndex = row.columnIndexes.get(col);
             int index = this.columnIndexes.get(row.getTableName()+"."+col);
             this.getValues().put(index,row.getValues().get(rowIndex));
-//            this.setAnnotation(row.getAnnotationsMap());
         }
     }
     public List<String> getAliasList(int index){
@@ -210,10 +209,6 @@ public class Row {
             }
         }
         return rawString.replaceAll(", $","")+" }" + String.format(" => Appearance: %d => (%s)",this.annotations.values().size(),getFinalAnnotation());
-    }
-
-    public void resetAnnotation(){
-        this.annotations = new HashMap<>();
     }
     public String getTableName() {
         return tableName;

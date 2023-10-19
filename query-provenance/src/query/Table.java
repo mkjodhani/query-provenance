@@ -1,5 +1,6 @@
 package query;
 
+import database.DatabaseConnection;
 import query.clause.ComplexClause;
 import query.clause.SimpleClause;
 
@@ -14,11 +15,11 @@ import java.util.*;
  */
 
 public class Table {
-    String name;
+    private String name;
     public static int maxFetchRows = Integer.MAX_VALUE;
-    HashMap<String, Row.TYPE> columnTypes;
-    HashMap<String, Integer> columnIndexes;
-    List<Row> rows;
+    private HashMap<String, Row.TYPE> columnTypes;
+    private HashMap<String, Integer> columnIndexes;
+    private List<Row> rows;
     public Table(){
         this.name = "";
         this.columnTypes = new HashMap<>();
@@ -45,7 +46,7 @@ public class Table {
     }
 
     private HashMap<String, Row.TYPE> getColumnTypesByRelation() throws SQLException {
-        Connection connection  = Query.getConnection();
+        Connection connection  = DatabaseConnection.getConnection();
         Statement statement = connection.createStatement();
         ResultSet resultSet = statement.executeQuery("SELECT  * FROM " + this.name);
         ResultSetMetaData metaData = resultSet.getMetaData();
@@ -67,7 +68,7 @@ public class Table {
     }
     private List<Row> getRowsByRelation() throws SQLException {
         int fetchedRows = 0;
-        Connection connection  = Query.getConnection();
+        Connection connection  = DatabaseConnection.getConnection();
         Statement statement = connection.createStatement();
         ResultSet resultSet = statement.executeQuery("SELECT  * FROM " + this.name);
         ResultSetMetaData metaData = resultSet.getMetaData();
@@ -84,7 +85,6 @@ public class Table {
             // hard-coded value:: ERROR need to change
             row.setAnnotation(String.format("%s",row.getValueByColumn("ann")));
             rows.add(row);
-//            fetchedRows++;
         }
         return rows;
     }
@@ -161,11 +161,6 @@ public class Table {
             }
         }
     }
-//    58
-//    42
-//    63
-//    30
-//    40
     public void filterProjection(List<String> columns){
         for(Row row: this.rows){
             row.filterByColumnNames(columns);
@@ -210,5 +205,13 @@ public class Table {
     }
     public HashMap<String, Row.TYPE> getColumnTypes() {
         return columnTypes;
+    }
+
+    public HashMap<String, Integer> getColumnIndexes() {
+        return columnIndexes;
+    }
+
+    public List<Row> getRows() {
+        return rows;
     }
 }
