@@ -19,7 +19,7 @@ public class Table {
     HashMap<String, Row.TYPE> columnTypes;
     HashMap<String, Integer> columnIndexes;
     List<Row> rows;
-    public Table(){
+    private Table(){
         this.name = "";
         this.columnTypes = new HashMap<>();
         this.columnIndexes = new HashMap<>();
@@ -35,13 +35,6 @@ public class Table {
         catch (Exception e){
             e.printStackTrace();
         }
-    }
-
-    public Table(HashMap<String, Row.TYPE> columnTypes, List<Row> rows, String tableName) throws SQLException {
-        this.rows = rows;
-        this.columnTypes = columnTypes;
-        this.columnIndexes = getColumnIndexesByRelation(this.columnTypes);
-        this.name = tableName;
     }
 
     private HashMap<String, Row.TYPE> getColumnTypesByRelation() throws SQLException {
@@ -202,7 +195,7 @@ public class Table {
                 row.copyFrom(rowA);
                 row.copyFrom(rowB);
                 row.setAnnotation(rowA.getAnnotation() + "·"+rowB.getAnnotation());
-            jointTable.rows.add(row);
+                jointTable.rows.add(row);
             }
         }
         jointTable.filterByClauses(clauses);

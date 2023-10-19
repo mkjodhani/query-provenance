@@ -47,13 +47,13 @@ public class Main {
             System.out.println(values);
         }
     }
-    private static void runQuery() throws SQLException {
+    private static void runQuery(){
         String[] reportQueries = new String[]{
             "select supplier_name from suppliers, routes where supplier = suppliers.supplier_id AND region_to = 5",
             "SELECT product_type, region_name FROM products, regions where origin_region = regions.region_id",
-            "SELECT product_type, region_name FROM products, routes where product = products.product_id AND region_from in (1, 2)"
+            "SELECT product_type FROM products, routes where product = products.product_id OR region_from in (1, 2)"
         };
-        String query = reportQueries[1];
+        String query = reportQueries[2];
         System.out.println("Query ::");
         System.out.println(query);
         if(query.contains("UNION")){

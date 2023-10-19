@@ -161,12 +161,14 @@ public class Row {
         HashMap<String,TYPE> filteredColumnTypes = new HashMap<>();
         HashMap<String,Integer> filteredColumnIndexed = new HashMap<>();
         for (String col : columns) {
-            col = col.trim();
             int index = this.columnIndexes.getOrDefault(col, -1);
+            if(index == -1){
+                continue;
+            }
             List<String> cols = getAliasList(index);
             for(String selectedCol: cols){
-                filteredColumnIndexed.put(selectedCol.trim(),index);
-                filteredColumnTypes.put(selectedCol.trim(),this.columnTypes.get(selectedCol));
+                filteredColumnIndexed.put(selectedCol,index);
+                filteredColumnTypes.put(selectedCol,this.columnTypes.get(selectedCol));
             }
             filteredValues.put(index,this.getValueByColumn(col));
         }
@@ -209,7 +211,7 @@ public class Row {
                 selectedString.put(this.columnIndexes.get(col),true);
             }
         }
-        return rawString.replaceAll(", $","")+" }" + String.format(" => Appearance: %d => (%s)",this.annotations.values().size(),getFinalAnnotation());
+        return rawString.replaceAll(", $","")+" }" + String.format(" => Total Number of Appearance: %d => (%s)",this.annotations.values().size(),getFinalAnnotation());
     }
 
     public void resetAnnotation(){

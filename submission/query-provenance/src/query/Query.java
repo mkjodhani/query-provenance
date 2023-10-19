@@ -53,6 +53,7 @@ public class Query {
             if(this.relations.size() > 1){
                 this.projection = a.join(b,this.clauses);
             }
+//            this.projection.filterByClauses(this.clauses);
             this.projection.filterProjection(this.selectedColumns);
             this.projection.aggregate();
             executionTime = System.currentTimeMillis() - startTime;

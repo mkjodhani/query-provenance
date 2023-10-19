@@ -1,7 +1,6 @@
 package query;
 
-import javafx.scene.control.Tab;
-
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -14,21 +13,19 @@ import java.util.List;
  */
 public class Union {
     private List<Row> rows;
-    private Table projectionA, projectionB;
     private HashMap<String, Row.TYPE> columnTypes;
+    private Table table;
 
-    public Union(Table tableA, Table tableB) {
-        this.projectionA = tableA;
-        this.projectionB = tableB;
+    public Union(Table tableA, Table tableB) throws SQLException {
         this.rows = new ArrayList<>();
-        this.rows.addAll(this.projectionA.rows);
-        this.rows.addAll(this.projectionB.rows);
-        this.columnTypes = this.projectionA.columnTypes;
+        this.rows.addAll(tableA.rows);
+        this.rows.addAll(tableB.rows);
+        this.columnTypes = tableA.columnTypes;
+        this.table = new Table(this.columnTypes,this.rows, String.format(tableA+":"+ tableB));
+        table.aggregate();
     }
     public void show() {
-        for (Row row : this.rows) {
-            System.out.println(row);
-        }
+        this.table.show();
     }
 
 }

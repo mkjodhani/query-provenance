@@ -1,4 +1,4 @@
-package query;
+package query.clause;
 
 import java.util.Objects;
 import java.util.regex.Pattern;
@@ -9,17 +9,28 @@ import java.util.regex.Pattern;
  * @project Query Provenance
  * @since 15/10/23
  */
-public class Clause {
+public class SimpleClause {
+    ComplexClause.CONJUNCTION conjunction;
     private String operator, left, right;
     public static Pattern comparatorPattern;
+    public static Pattern conjucationPattern;
     static{
         comparatorPattern = Pattern.compile("( [<>=(in)(IN)]+ )");
+        conjucationPattern = Pattern.compile("( (AND)?(and)?(OR)?(OR)? )");
     }
 
-    public Clause(String operator, String left, String right) {
+    public SimpleClause(String operator, String left, String right) {
         this.operator = operator.replaceAll(" ", "");
         this.left = left.replaceAll("[-+^' ]*","");
         this.right = right.replaceAll("[-+^' ]*","");
+    }
+
+    public ComplexClause.CONJUNCTION getConjunction() {
+        return conjunction;
+    }
+
+    public void setConjunction(ComplexClause.CONJUNCTION conjunction) {
+        this.conjunction = conjunction;
     }
 
     @Override
@@ -31,7 +42,7 @@ public class Clause {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Clause clause = (Clause) o;
+        SimpleClause clause = (SimpleClause) o;
         return Objects.equals(operator, clause.operator) && Objects.equals(left, clause.left) && Objects.equals(right, clause.right);
     }
 
