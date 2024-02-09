@@ -1,3 +1,5 @@
+package org.queryprovenance.demo;
+
 import database.DatabaseConnection;
 import query.Query;
 import query.Table;
@@ -11,7 +13,6 @@ import java.util.List;
 /**
  * @author mkjodhani
  * @version 1
- * @project Query Provenance
  * @since 15/10/23
  */
 public class Main {
@@ -26,7 +27,7 @@ public class Main {
         }
     }
 
-    public static void generateReport() {
+    public static void generateReport() throws SQLException {
         String[] reportQueries = new String[]{
                 "select female.birthdate from male, female where male.fav_num > 5 AND female.fav_num < 100000",
                 "SELECT male.name, female.birthdate,  FROM male, female where female.fav_num > 6522",

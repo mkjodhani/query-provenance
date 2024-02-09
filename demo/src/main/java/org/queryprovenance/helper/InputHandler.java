@@ -1,11 +1,10 @@
-package helper;
+package org.queryprovenance.helper;
 
 import java.util.Scanner;
 
 
 /**
  * @author mkjodhani
- * @project Query Provenance
  * @version 1
  */
 public class InputHandler {
