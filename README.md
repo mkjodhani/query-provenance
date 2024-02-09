@@ -33,19 +33,21 @@ In the academic literature, the term "provenance" is often used interchangeably 
 The primary objective of this project is to implement a query processor that evaluates SQL queries involving annotated relations and produces annotated query results. To illustrate this, we will consider a database, D, containing annotated relations R(A1, A2, ..., An, I) and S(B1, B2, ..., Bm, J). The query, Q, will join R and S, and the results will be stored as an annotated relation, T(A1, ..., An, B1, ..., Bm, K), where K represents the annotations of the tuples in T. Each tuple in T is associated with an annotation, which is a collection of annotations from tuples in R and S that contributed to it.
 
 ## Getting Started
-1. Install PgAdmin4 for database server from [here](https://www.pgadmin.org/download/).
-2. We have used two different database schema for this project.
-    - Import  [Postgres](/assets/database/demo.sql) & [Reva](/assets/database/reva.sql) Database
-```shell
-    $ psql postgres
-    postgres-#  CREATE ROLE postgres WITH LOGIN PASSWORD 'postgres';
-    postgres-#  ALTER ROLE postgres CREATEDB;
-    postgres-#  GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO postgres;
-    postgres-#  \q
-    $ psql -h localhost -U postgres -f demo.sql
-    $ psql -h localhost -U postgres -f reva.sql
-```
-3. Run the Project using Java environment.
+- Download the library from <a href="https://raw.githubusercontent.com/mkjodhani/query-provenance/master/assets/artifacts/query-provenance.jar" download="query-provenance.jar">here</a>.
+- Add JAR file to your project dependency.
+    - Using gradle plugin, add following line to `gradle.properties`
+        ```
+        dependencies {
+            // ...other depedencies 
+            implementation files('lib/query-provenance.jar')
+        }
+        ```
+    - if not, follow standard procedure to add JAR files to your project.
+
+
+## Resources
+- [Documentation](https://mkjodhani.com/docs/query-provenance/)
+- [Changelog](/CHANGELOG.md)
 
 ## Usage
 
@@ -55,16 +57,16 @@ Please refer to the project folder for the paper by [Green et al (PODS 2007)](as
 
 ## Contributing
 
-If you have questions or need assistance with the project or your contributions, please feel free to contact us. You can reach out to us through GitHub by creating an issue or using the contact information provided in the repository.
+If you have questions or need assistance with the project or your contributions, please feel free to contact me. You can reach out to me through GitHub by creating an issue or using the contact information provided in the repository.
 
-We look forward to collaborating with you and appreciate your interest in contributing to this project!
+I look forward to collaborating with you and appreciate your interest in contributing to this project!
 
 ## Contact
 
 If you encounter any bugs, have questions, or want to discuss the project further, please feel free to reach out to us.
 
-- [Email](mailto:mkjodhani133@gmail.com)
-- [GitHub Issues](https://github.com/mkjodhani/COMP-6521/issues)
+- [Email](mailto:contact@mkjodhani.com)
+- [GitHub Issues](https://github.com/mkjodhani/query-provenance/issues)
 
 ## License
 
